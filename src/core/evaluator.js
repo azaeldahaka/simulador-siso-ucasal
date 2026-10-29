@@ -1,6 +1,6 @@
 /**
  * Motor de Evaluación Semántica de Respuestas Escritas (Híbrido Offline + IA Opcional)
- * Evalúa con precisión el Active Recall del estudiante contrastando contra la rúbrica de Rivera.
+ * Con autodetección dinámica de modelos de Gemini y fallback automático.
  */
 
 // Normalizador de texto para español
@@ -37,16 +37,61 @@ const SYNONYMS = {
 
 export const evaluator = {
   /**
-   * Prueba rápida de conexión con Google Gemini API
+   * Consulta a la API de Google los modelos disponibles y activos para la API Key dada
    */
-  async testConnection(apiKey, model = "gemini-1.5-flash") {
+  async listAvailableModels(apiKey) {
+    if (!apiKey || !apiKey.trim()) return [];
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey.trim()}`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      const models = (data.models || [])
+        .filter(m => (m.supportedGenerationMethods || []).includes("generateContent"))
+        .map(m => m.name.replace(/^models\//, ""));
+      return models;
+    } catch (e) {
+      console.warn("No se pudo listar modelos:", e);
+      return [];
+    }
+  },
+
+  /**
+   * Determina el mejor modelo Flash activo de una lista
+   */
+  pickBestModel(modelsList) {
+    if (!modelsList || modelsList.length === 0) return "gemini-2.5-flash";
+    const preferred = [
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-2.5-flash-lite",
+      "gemini-2.0-flash-exp",
+      "gemini-1.5-flash-latest",
+      "gemini-2.5-pro",
+      "gemini-2.0-pro",
+      "gemini-1.5-flash",
+      "gemini-1.5-pro"
+    ];
+    for (const pref of preferred) {
+      if (modelsList.includes(pref)) return pref;
+    }
+    const anyFlash = modelsList.find(m => m.toLowerCase().includes("flash"));
+    if (anyFlash) return anyFlash;
+    return modelsList[0];
+  },
+
+  /**
+   * Prueba de conexión con Google Gemini con autodetección si el modelo solicitado fue retirado
+   */
+  async testConnection(apiKey, model = "gemini-2.5-flash") {
     if (!apiKey || !apiKey.trim()) {
       return { success: false, message: "No se proporcionó ninguna API Key." };
     }
 
+    let targetModel = model.trim();
+
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`,
+      let response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey.trim()}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -57,29 +102,70 @@ export const evaluator = {
         }
       );
 
+      // Si el modelo específico no fue encontrado (404 / deprecated)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errMsg = errorData?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+        const errMsg = errorData?.error?.message || `HTTP ${response.status}`;
+
+        if (errMsg.includes("not found") || errMsg.includes("not supported") || response.status === 404) {
+          console.log(`Modelo ${targetModel} no disponible. Autodetectando modelos activos...`);
+          const availableModels = await this.listAvailableModels(apiKey);
+
+          if (availableModels.length > 0) {
+            const best = this.pickBestModel(availableModels);
+            console.log(`Reintentando con modelo activo detectado: ${best}`);
+
+            // Reintento con el modelo activo
+            const retryRes = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${best}:generateContent?key=${apiKey.trim()}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: "Responde únicamente la palabra CONECTADO." }] }],
+                  generationConfig: { maxOutputTokens: 10, temperature: 0.1 }
+                })
+              }
+            );
+
+            if (retryRes.ok) {
+              const retryData = await retryRes.json();
+              const reply = retryData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "OK";
+              return {
+                success: true,
+                message: `¡Conexión Exitosa! El modelo antiguo "${targetModel}" ya no está disponible en la API, pero el simulador autodetectó y conectó con éxito "${best}".`,
+                autoSwitched: true,
+                suggestedModel: best,
+                availableModels
+              };
+            }
+          }
+        }
+
         return { success: false, message: `Error de API: ${errMsg}` };
       }
 
       const data = await response.json();
       const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+      const availableModels = await this.listAvailableModels(apiKey);
+
       return {
         success: true,
-        message: `¡Conexión exitosa! El modelo ${model} respondió: "${reply || 'OK'}"`
+        message: `¡Conexión exitosa! El modelo ${targetModel} respondió correctamente ("${reply || 'OK'}").`,
+        autoSwitched: false,
+        suggestedModel: targetModel,
+        availableModels
       };
     } catch (err) {
       return {
         success: false,
-        message: `Fallo de red o CORS: ${err.message}. Verificá tu conexión a internet.`
+        message: `Fallo de red: ${err.message}. Verificá tu conexión a internet.`
       };
     }
   },
 
   /**
    * Evaluación Heurística Offline
-   * Analiza keywords, sinónimos, longitud y elaboración semántica.
    */
   evaluateOffline(userAnswer, question) {
     const normAnswer = normalizeText(userAnswer);
@@ -121,7 +207,7 @@ export const evaluator = {
     const keywordRatio = matched.length / question.requiredKeywords.length;
     let score = Math.round(keywordRatio * 100);
 
-    // Penalización por respuesta telegráfica (ej: solo listó palabras sueltas sin hilvanar)
+    // Penalización si es muy telegráfica
     if (wordsCount < 20 && score > 60) {
       score = Math.max(50, score - 20);
     }
@@ -158,9 +244,9 @@ export const evaluator = {
   },
 
   /**
-   * Evaluación Asistida por IA (Gemini API) con Fallback Automático a Offline
+   * Evaluación Asistida por IA con Auto-Recuperación de Modelo
    */
-  async evaluateWithAi(userAnswer, question, apiKey, model = "gemini-1.5-flash") {
+  async evaluateWithAi(userAnswer, question, apiKey, model = "gemini-2.5-flash") {
     if (!apiKey) {
       return this.evaluateOffline(userAnswer, question);
     }
@@ -191,9 +277,11 @@ Devuelve tu evaluación estrictamente en formato JSON válido con las siguientes
   "puntosMejora": ["omisión o error conceptual 1", "omisión 2"]
 }`;
 
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`,
+    let activeModel = model;
+
+    async function sendRequest(mod) {
+      return fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${apiKey.trim()}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -203,6 +291,25 @@ Devuelve tu evaluación estrictamente en formato JSON válido con las siguientes
           })
         }
       );
+    }
+
+    try {
+      let response = await sendRequest(activeModel);
+
+      // Si el modelo falló por no existir, autodetectar uno activo
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errMsg = errorData?.error?.message || "";
+        if (errMsg.includes("not found") || errMsg.includes("not supported") || response.status === 404) {
+          console.warn(`Modelo ${activeModel} no disponible en tu cuenta. Buscando modelo alternativo...`);
+          const availableModels = await this.listAvailableModels(apiKey);
+          if (availableModels.length > 0) {
+            activeModel = this.pickBestModel(availableModels);
+            console.log(`Cambiando automáticamente a: ${activeModel}`);
+            response = await sendRequest(activeModel);
+          }
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`API Error HTTP ${response.status}`);
@@ -225,12 +332,12 @@ Devuelve tu evaluación estrictamente en formato JSON válido con las siguientes
         sampleAnswer: question.sampleAnswer,
         criterio: question.criterioExamen,
         isAi: true,
-        modelUsed: model
+        modelUsed: activeModel
       };
     } catch (err) {
       console.warn("Fallo evaluación con IA, usando motor heurístico offline:", err);
       const fallback = this.evaluateOffline(userAnswer, question);
-      fallback.feedback += " (Nota: Evaluado con motor heurístico local offline debido a problemas temporales con la API de IA).";
+      fallback.feedback += " (Nota: Evaluado con motor heurístico local offline debido a problemas temporales con el modelo de IA).";
       return fallback;
     }
   }

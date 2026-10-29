@@ -510,6 +510,32 @@
   margin-bottom: 6px;
 }
 
+.model-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.model-label-row .setting-label {
+  margin-bottom: 0;
+}
+
+.btn-text-link {
+  background: transparent;
+  border: none;
+  color: var(--accent-light);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.btn-text-link:hover {
+  color: #fff;
+}
+
 .input-with-action {
   display: flex;
   gap: 8px;

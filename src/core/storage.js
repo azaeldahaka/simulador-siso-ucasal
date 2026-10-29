@@ -16,7 +16,7 @@ export const storage = {
       const data = localStorage.getItem(KEYS.SETTINGS);
       const defaults = {
         geminiApiKey: "",
-        geminiModel: "gemini-1.5-flash",
+        geminiModel: "gemini-2.5-flash",
         soundEnabled: true,
         darkMode: true
       };
@@ -24,7 +24,7 @@ export const storage = {
     } catch {
       return {
         geminiApiKey: "",
-        geminiModel: "gemini-1.5-flash",
+        geminiModel: "gemini-2.5-flash",
         soundEnabled: true,
         darkMode: true
       };

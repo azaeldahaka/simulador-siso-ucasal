@@ -73,9 +73,13 @@ export function initApp() {
 
 function renderSettingsModal(container) {
   let isTesting = false;
+  let isDetecting = false;
   let testResult = null; // null | { success: boolean, message: string }
+  let detectedModelsList = null;
 
   function renderModalContent() {
+    const currentModel = appState.settings.geminiModel || "gemini-2.5-flash";
+
     container.innerHTML = `
       <div class="modal-backdrop animate-fade-in">
         <div class="modal-card">
@@ -96,7 +100,7 @@ function renderSettingsModal(container) {
                 <ol>
                   <li>Abrí <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">Google AI Studio (aistudio.google.com)</a> con tu cuenta Google.</li>
                   <li>Hacé clic en el botón azul <strong>"Get API key"</strong> y luego en <strong>"Create API key"</strong>.</li>
-                  <li>Pegá la clave abajo y probala. Es 100% gratuita y se guarda solo en tu navegador (privacidad total).</li>
+                  <li>Pegá la clave abajo y hacé clic en <strong>"Probar Conexión"</strong>. El sistema autodetectará el modelo activo más rápido.</li>
                 </ol>
               </div>
             </div>
@@ -119,19 +123,39 @@ function renderSettingsModal(container) {
               </div>
             </div>
 
-            <!-- Selector de Modelo -->
+            <!-- Selector de Modelo con Autodetección Dinámica -->
             <div class="setting-item">
-              <label for="gemini-model" class="setting-label">Modelo de Inteligencia Artificial:</label>
+              <div class="model-label-row">
+                <label for="gemini-model" class="setting-label">Modelo de Inteligencia Artificial:</label>
+                <button id="btn-detect-models" class="btn-text-link" title="Consultar a Google qué modelos están activos para tu cuenta">
+                  ${isDetecting ? 'Detectando...' : '🔍 Detectar modelos de mi cuenta'}
+                </button>
+              </div>
+
               <select id="gemini-model" class="setting-input clean-select">
-                <option value="gemini-1.5-flash" ${appState.settings.geminiModel === 'gemini-1.5-flash' ? 'selected' : ''}>
-                  gemini-1.5-flash (Recomendado • Rápido y cuota gratis generosa)
-                </option>
-                <option value="gemini-2.0-flash" ${appState.settings.geminiModel === 'gemini-2.0-flash' ? 'selected' : ''}>
-                  gemini-2.0-flash (Última generación de baja latencia)
-                </option>
-                <option value="gemini-1.5-pro" ${appState.settings.geminiModel === 'gemini-1.5-pro' ? 'selected' : ''}>
-                  gemini-1.5-pro (Razonamiento profundo para respuestas complejas)
-                </option>
+                ${detectedModelsList && detectedModelsList.length > 0 ? `
+                  ${detectedModelsList.map(m => `
+                    <option value="${m}" ${m === currentModel ? 'selected' : ''}>
+                      ${m} ${m.includes('flash') ? '⚡ (Recomendado)' : m.includes('pro') ? '🧠 (Pro)' : ''}
+                    </option>
+                  `).join("")}
+                ` : `
+                  <option value="gemini-2.5-flash" ${currentModel === 'gemini-2.5-flash' ? 'selected' : ''}>
+                    gemini-2.5-flash (Recomendado actual • Ultrarrápido y cuota gratis)
+                  </option>
+                  <option value="gemini-2.0-flash" ${currentModel === 'gemini-2.0-flash' ? 'selected' : ''}>
+                    gemini-2.0-flash (Generación Flash 2.0)
+                  </option>
+                  <option value="gemini-2.5-flash-lite" ${currentModel === 'gemini-2.5-flash-lite' ? 'selected' : ''}>
+                    gemini-2.5-flash-lite (Ligero y ágil)
+                  </option>
+                  <option value="gemini-2.5-pro" ${currentModel === 'gemini-2.5-pro' ? 'selected' : ''}>
+                    gemini-2.5-pro (Razonamiento profundo para respuestas complejas)
+                  </option>
+                  <option value="gemini-1.5-flash" ${currentModel === 'gemini-1.5-flash' ? 'selected' : ''}>
+                    gemini-1.5-flash (Legado • Puede no estar disponible)
+                  </option>
+                `}
               </select>
             </div>
 
@@ -192,6 +216,7 @@ function renderSettingsModal(container) {
     const backdrop = container.querySelector(".modal-backdrop");
     const btnSave = container.querySelector("#btn-save-settings");
     const btnTest = container.querySelector("#btn-test-ai");
+    const btnDetect = container.querySelector("#btn-detect-models");
     const inputKey = container.querySelector("#gemini-key");
     const selectModel = container.querySelector("#gemini-model");
     const btnToggleVis = container.querySelector("#btn-toggle-key-visibility");
@@ -218,6 +243,41 @@ function renderSettingsModal(container) {
       });
     }
 
+    // Botón de detección explícita de modelos
+    if (btnDetect) {
+      btnDetect.addEventListener("click", async () => {
+        const key = inputKey.value.trim();
+        if (!key) {
+          alert("Pegá primero tu API Key arriba para consultar los modelos habilitados.");
+          return;
+        }
+
+        isDetecting = true;
+        renderModalContent();
+
+        const models = await evaluator.listAvailableModels(key);
+        isDetecting = false;
+
+        if (models && models.length > 0) {
+          detectedModelsList = models;
+          const best = evaluator.pickBestModel(models);
+          appState.updateSettings({ geminiApiKey: key, geminiModel: best });
+          testResult = {
+            success: true,
+            message: `¡Se detectaron ${models.length} modelos activos en tu cuenta de Google! Se seleccionó automáticamente "${best}".`
+          };
+        } else {
+          testResult = {
+            success: false,
+            message: "No se pudieron obtener modelos. Verificá que la API Key sea válida y tenga conexión."
+          };
+        }
+
+        renderModalContent();
+      });
+    }
+
+    // Botón de Test de Conexión
     if (btnTest) {
       btnTest.addEventListener("click", async () => {
         const key = inputKey.value.trim();
@@ -239,6 +299,15 @@ function renderSettingsModal(container) {
         const res = await evaluator.testConnection(key, model);
         isTesting = false;
         testResult = res;
+
+        // Si se autoconmutó a un modelo activo porque el anterior no existía
+        if (res.suggestedModel) {
+          appState.updateSettings({ geminiApiKey: key, geminiModel: res.suggestedModel });
+          if (res.availableModels && res.availableModels.length > 0) {
+            detectedModelsList = res.availableModels;
+          }
+        }
+
         renderModalContent();
       });
     }
