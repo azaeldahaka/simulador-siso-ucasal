@@ -78,7 +78,7 @@ function renderSettingsModal(container) {
   let detectedModelsList = null;
 
   function renderModalContent() {
-    const currentModel = appState.settings.geminiModel || "gemini-2.5-flash";
+    const currentModel = appState.settings.geminiModel || "gemini-3.8-flash";
 
     container.innerHTML = `
       <div class="modal-backdrop animate-fade-in">
@@ -140,20 +140,17 @@ function renderSettingsModal(container) {
                     </option>
                   `).join("")}
                 ` : `
+                  <option value="gemini-3.8-flash" ${currentModel === 'gemini-3.8-flash' ? 'selected' : ''}>
+                    gemini-3.8-flash (Recomendado Oficial Google 2026 • Ultrarrápido)
+                  </option>
+                  <option value="gemini-3.5-flash-lite" ${currentModel === 'gemini-3.5-flash-lite' ? 'selected' : ''}>
+                    gemini-3.5-flash-lite (Ligero y ágil)
+                  </option>
+                  <option value="gemini-3.8-pro" ${currentModel === 'gemini-3.8-pro' ? 'selected' : ''}>
+                    gemini-3.8-pro (Razonamiento profundo para respuestas de examen)
+                  </option>
                   <option value="gemini-2.5-flash" ${currentModel === 'gemini-2.5-flash' ? 'selected' : ''}>
-                    gemini-2.5-flash (Recomendado actual • Ultrarrápido y cuota gratis)
-                  </option>
-                  <option value="gemini-2.0-flash" ${currentModel === 'gemini-2.0-flash' ? 'selected' : ''}>
-                    gemini-2.0-flash (Generación Flash 2.0)
-                  </option>
-                  <option value="gemini-2.5-flash-lite" ${currentModel === 'gemini-2.5-flash-lite' ? 'selected' : ''}>
-                    gemini-2.5-flash-lite (Ligero y ágil)
-                  </option>
-                  <option value="gemini-2.5-pro" ${currentModel === 'gemini-2.5-pro' ? 'selected' : ''}>
-                    gemini-2.5-pro (Razonamiento profundo para respuestas complejas)
-                  </option>
-                  <option value="gemini-1.5-flash" ${currentModel === 'gemini-1.5-flash' ? 'selected' : ''}>
-                    gemini-1.5-flash (Legado • Puede no estar disponible)
+                    gemini-2.5-flash (Generación previa)
                   </option>
                 `}
               </select>
@@ -199,6 +196,10 @@ function renderSettingsModal(container) {
           </div>
 
           <div class="modal-footer">
+            <button id="btn-purge-cache" class="btn btn-secondary btn-sm" title="Fuerza la recarga limpia de todos los scripts y estilos">
+              🔄 Limpiar Caché y Recargar
+            </button>
+            <div style="flex: 1"></div>
             <button id="btn-cancel-settings" class="btn btn-secondary">
               Cancelar
             </button>
@@ -217,11 +218,24 @@ function renderSettingsModal(container) {
     const btnSave = container.querySelector("#btn-save-settings");
     const btnTest = container.querySelector("#btn-test-ai");
     const btnDetect = container.querySelector("#btn-detect-models");
+    const btnPurge = container.querySelector("#btn-purge-cache");
     const inputKey = container.querySelector("#gemini-key");
     const selectModel = container.querySelector("#gemini-model");
     const btnToggleVis = container.querySelector("#btn-toggle-key-visibility");
 
     const close = () => { container.innerHTML = ""; };
+
+    if (btnPurge) {
+      btnPurge.addEventListener("click", async () => {
+        if (confirm("¿Vaciar caché del navegador y recargar la última versión desde el servidor?")) {
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+          }
+          window.location.reload();
+        }
+      });
+    }
 
     if (btnClose) btnClose.addEventListener("click", close);
     if (btnCancel) btnCancel.addEventListener("click", close);

@@ -1,6 +1,6 @@
 /**
  * Motor de Evaluación Semántica de Respuestas Escritas (Híbrido Offline + IA Opcional)
- * Con autodetección dinámica de modelos de Gemini y fallback automático.
+ * Con soporte para Gemini 3.8-Flash (Estándar Oficial Google 2026) y autodetección dinámica.
  */
 
 // Normalizador de texto para español
@@ -37,7 +37,7 @@ const SYNONYMS = {
 
 export const evaluator = {
   /**
-   * Consulta a la API de Google los modelos disponibles y activos para la API Key dada
+   * Consulta a la API de Google los modelos disponibles y activos para la API Key
    */
   async listAvailableModels(apiKey) {
     if (!apiKey || !apiKey.trim()) return [];
@@ -56,20 +56,17 @@ export const evaluator = {
   },
 
   /**
-   * Determina el mejor modelo Flash activo de una lista
+   * Determina el mejor modelo activo de la lista (prioriza generación 3.8 / 3.5 Flash)
    */
   pickBestModel(modelsList) {
-    if (!modelsList || modelsList.length === 0) return "gemini-2.5-flash";
+    if (!modelsList || modelsList.length === 0) return "gemini-3.8-flash";
     const preferred = [
+      "gemini-3.8-flash",
+      "gemini-3.5-flash-lite",
+      "gemini-3.8-pro",
       "gemini-2.5-flash",
-      "gemini-2.0-flash",
       "gemini-2.5-flash-lite",
-      "gemini-2.0-flash-exp",
-      "gemini-1.5-flash-latest",
-      "gemini-2.5-pro",
-      "gemini-2.0-pro",
-      "gemini-1.5-flash",
-      "gemini-1.5-pro"
+      "gemini-2.5-pro"
     ];
     for (const pref of preferred) {
       if (modelsList.includes(pref)) return pref;
@@ -82,12 +79,16 @@ export const evaluator = {
   /**
    * Prueba de conexión con Google Gemini con autodetección si el modelo solicitado fue retirado
    */
-  async testConnection(apiKey, model = "gemini-2.5-flash") {
+  async testConnection(apiKey, model = "gemini-3.8-flash") {
     if (!apiKey || !apiKey.trim()) {
       return { success: false, message: "No se proporcionó ninguna API Key." };
     }
 
-    let targetModel = model.trim();
+    let targetModel = (model || "").trim();
+    // Normalizar si venía con modelo deprecado en caché local
+    if (!targetModel || targetModel.includes("1.5") || targetModel.includes("2.0")) {
+      targetModel = "gemini-3.8-flash";
+    }
 
     try {
       let response = await fetch(
@@ -102,21 +103,53 @@ export const evaluator = {
         }
       );
 
-      // Si el modelo específico no fue encontrado (404 / deprecated)
+      // Si el modelo específico falló (404, 400 no longer available, deprecated)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errMsg = errorData?.error?.message || `HTTP ${response.status}`;
 
-        if (errMsg.includes("not found") || errMsg.includes("not supported") || response.status === 404) {
-          console.log(`Modelo ${targetModel} no disponible. Autodetectando modelos activos...`);
-          const availableModels = await this.listAvailableModels(apiKey);
+        const isModelDeprecated = 
+          errMsg.includes("no longer available") ||
+          errMsg.includes("not found") ||
+          errMsg.includes("not supported") ||
+          errMsg.includes("update your code") ||
+          response.status === 404;
 
+        if (isModelDeprecated) {
+          console.log(`Modelo ${targetModel} no disponible (${errMsg}). Conmutando a gemini-3.8-flash...`);
+          
+          // Reintento directo prioritario con gemini-3.8-flash
+          const fallbackModel = "gemini-3.8-flash";
+          const retryRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${fallbackModel}:generateContent?key=${apiKey.trim()}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: "Responde únicamente la palabra CONECTADO." }] }],
+                generationConfig: { maxOutputTokens: 10, temperature: 0.1 }
+              })
+            }
+          );
+
+          if (retryRes.ok) {
+            const retryData = await retryRes.json();
+            const reply = retryData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "OK";
+            const availableModels = await this.listAvailableModels(apiKey);
+            return {
+              success: true,
+              message: `¡Conexión Exitosa con ${fallbackModel}! (Se actualizó automáticamente el modelo obsoleto "${targetModel}").`,
+              autoSwitched: true,
+              suggestedModel: fallbackModel,
+              availableModels: availableModels.length > 0 ? availableModels : [fallbackModel, "gemini-3.5-flash-lite", "gemini-3.8-pro"]
+            };
+          }
+
+          // Si gemini-3.8-flash fallara, consultar la lista completa activa de la cuenta
+          const availableModels = await this.listAvailableModels(apiKey);
           if (availableModels.length > 0) {
             const best = this.pickBestModel(availableModels);
-            console.log(`Reintentando con modelo activo detectado: ${best}`);
-
-            // Reintento con el modelo activo
-            const retryRes = await fetch(
+            const dynamicRes = await fetch(
               `https://generativelanguage.googleapis.com/v1beta/models/${best}:generateContent?key=${apiKey.trim()}`,
               {
                 method: "POST",
@@ -128,12 +161,10 @@ export const evaluator = {
               }
             );
 
-            if (retryRes.ok) {
-              const retryData = await retryRes.json();
-              const reply = retryData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "OK";
+            if (dynamicRes.ok) {
               return {
                 success: true,
-                message: `¡Conexión Exitosa! El modelo antiguo "${targetModel}" ya no está disponible en la API, pero el simulador autodetectó y conectó con éxito "${best}".`,
+                message: `¡Conexión Exitosa con ${best}! Modelo detectado activamente en tu cuenta.`,
                 autoSwitched: true,
                 suggestedModel: best,
                 availableModels
@@ -146,15 +177,15 @@ export const evaluator = {
       }
 
       const data = await response.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "OK";
       const availableModels = await this.listAvailableModels(apiKey);
 
       return {
         success: true,
-        message: `¡Conexión exitosa! El modelo ${targetModel} respondió correctamente ("${reply || 'OK'}").`,
+        message: `¡Conexión exitosa! El modelo ${targetModel} respondió: "${reply}".`,
         autoSwitched: false,
         suggestedModel: targetModel,
-        availableModels
+        availableModels: availableModels.length > 0 ? availableModels : [targetModel]
       };
     } catch (err) {
       return {
@@ -244,11 +275,16 @@ export const evaluator = {
   },
 
   /**
-   * Evaluación Asistida por IA con Auto-Recuperación de Modelo
+   * Evaluación Asistida por IA con Auto-Recuperación de Modelo a 3.8-Flash
    */
-  async evaluateWithAi(userAnswer, question, apiKey, model = "gemini-2.5-flash") {
+  async evaluateWithAi(userAnswer, question, apiKey, model = "gemini-3.8-flash") {
     if (!apiKey) {
       return this.evaluateOffline(userAnswer, question);
+    }
+
+    let activeModel = (model || "").trim();
+    if (!activeModel || activeModel.includes("1.5") || activeModel.includes("2.0")) {
+      activeModel = "gemini-3.8-flash";
     }
 
     const promptText = `Actúa como el profesor Fernando Rivera de la materia Sistemas Operativos (UCASAL - Universidad Católica de Salta).
@@ -277,8 +313,6 @@ Devuelve tu evaluación estrictamente en formato JSON válido con las siguientes
   "puntosMejora": ["omisión o error conceptual 1", "omisión 2"]
 }`;
 
-    let activeModel = model;
-
     async function sendRequest(mod) {
       return fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${apiKey.trim()}`,
@@ -296,18 +330,21 @@ Devuelve tu evaluación estrictamente en formato JSON válido con las siguientes
     try {
       let response = await sendRequest(activeModel);
 
-      // Si el modelo falló por no existir, autodetectar uno activo
+      // Si el modelo seleccionado falló por estar deprecado
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errMsg = errorData?.error?.message || "";
-        if (errMsg.includes("not found") || errMsg.includes("not supported") || response.status === 404) {
-          console.warn(`Modelo ${activeModel} no disponible en tu cuenta. Buscando modelo alternativo...`);
-          const availableModels = await this.listAvailableModels(apiKey);
-          if (availableModels.length > 0) {
-            activeModel = this.pickBestModel(availableModels);
-            console.log(`Cambiando automáticamente a: ${activeModel}`);
-            response = await sendRequest(activeModel);
-          }
+        const isDeprecated = 
+          errMsg.includes("no longer available") ||
+          errMsg.includes("not found") ||
+          errMsg.includes("not supported") ||
+          errMsg.includes("update your code") ||
+          response.status === 404;
+
+        if (isDeprecated) {
+          console.warn(`Modelo ${activeModel} deprecado en la API. Conmutando a gemini-3.8-flash...`);
+          activeModel = "gemini-3.8-flash";
+          response = await sendRequest(activeModel);
         }
       }
 
@@ -337,7 +374,7 @@ Devuelve tu evaluación estrictamente en formato JSON válido con las siguientes
     } catch (err) {
       console.warn("Fallo evaluación con IA, usando motor heurístico offline:", err);
       const fallback = this.evaluateOffline(userAnswer, question);
-      fallback.feedback += " (Nota: Evaluado con motor heurístico local offline debido a problemas temporales con el modelo de IA).";
+      fallback.feedback += " (Nota: Evaluado con motor heurístico local offline debido a fallas temporales con el servicio de IA).";
       return fallback;
     }
   }

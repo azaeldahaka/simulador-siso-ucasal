@@ -1,9 +1,10 @@
 /**
  * Service Worker para funcionamiento 100% Offline (PWA)
- * Cache-First Strategy con auto-actualización
+ * Estrategia Híbrida: Network-First para Código (.js, .css, .html) + Cache-First para Medios
  */
 
-const CACHE_NAME = "siso-simulador-v3";
+const CACHE_NAME = "siso-simulador-v3.8.0";
+
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -33,24 +34,25 @@ const ASSETS_TO_CACHE = [
   "./src/components/cheatsheet-view.js"
 ];
 
-// Instalación: Cachear todos los recursos estáticos
+// Instalación: Forzar activación inmediata
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("[SW] Cacheando assets para offline...");
+      console.log("[SW] Pre-cacheando assets actualizados v3.8.0...");
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
-// Activación: Limpiar caches viejas
+// Activación: Purgar inmediatamente todas las caches antiguas
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log("[SW] Borrando cache vieja:", key);
+            console.log("[SW] Purgando cache antigua obsoleta:", key);
             return caches.delete(key);
           }
         })
@@ -59,29 +61,68 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Fetch: Responder desde cache, fallback a red
+// Fetch Handler Inteligente
 self.addEventListener("fetch", (event) => {
-  // Ignorar llamadas a APIs externas como Gemini
-  if (event.request.url.includes("googleapis.com")) {
+  const url = new URL(event.request.url);
+
+  // 1. Ignorar llamadas a APIs externas como Gemini
+  if (url.origin.includes("googleapis.com")) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
+  // 2. Solo manejar peticiones GET
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  const isCodeOrHtml = 
+    event.request.mode === "navigate" ||
+    url.pathname.endsWith(".html") ||
+    url.pathname.endsWith(".js") ||
+    url.pathname.endsWith(".css") ||
+    url.pathname.endsWith("/") ||
+    url.search.includes("v=");
+
+  if (isCodeOrHtml) {
+    // ESTRATEGIA NETWORK-FIRST: Si hay internet, siempre la versión más reciente
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Si está offline o falla la red, recurrir a la copia en caché
+          return caches.match(event.request).then((cached) => {
+            if (cached) return cached;
+            if (event.request.mode === "navigate") {
+              return caches.match("./index.html");
+            }
+          });
+        })
+    );
+  } else {
+    // ESTRATEGIA CACHE-FIRST: Para imágenes, iconos y fuentes
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
           return networkResponse;
         });
-      });
-    }).catch(() => {
-      // Fallback offline a index.html si es navegación
-      if (event.request.mode === "navigate") {
-        return caches.match("./index.html");
-      }
-    })
-  );
+      })
+    );
+  }
 });

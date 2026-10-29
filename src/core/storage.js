@@ -16,15 +16,21 @@ export const storage = {
       const data = localStorage.getItem(KEYS.SETTINGS);
       const defaults = {
         geminiApiKey: "",
-        geminiModel: "gemini-2.5-flash",
+        geminiModel: "gemini-3.8-flash",
         soundEnabled: true,
         darkMode: true
       };
-      return data ? { ...defaults, ...JSON.parse(data) } : defaults;
+      const settings = data ? { ...defaults, ...JSON.parse(data) } : defaults;
+      // Auto-migración si el usuario tenía guardado en localStorage un modelo deprecado (1.5, 2.0, etc.)
+      if (!settings.geminiModel || settings.geminiModel.includes("1.5") || settings.geminiModel.includes("2.0") || settings.geminiModel === "gemini-2.5-flash") {
+        settings.geminiModel = "gemini-3.8-flash";
+        this.saveSettings(settings);
+      }
+      return settings;
     } catch {
       return {
         geminiApiKey: "",
-        geminiModel: "gemini-2.5-flash",
+        geminiModel: "gemini-3.8-flash",
         soundEnabled: true,
         darkMode: true
       };

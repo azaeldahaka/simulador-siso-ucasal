@@ -18,7 +18,7 @@ export function renderOpenView(container) {
     const savedText = userAnswers[q.id] || "";
     const evalResult = evaluationResults[q.id];
     const hasAiKey = Boolean(appState.settings.geminiApiKey && appState.settings.geminiApiKey.trim());
-    const aiModel = appState.settings.geminiModel || "gemini-2.5-flash";
+    const aiModel = appState.settings.geminiModel || "gemini-3.8-flash";
 
     container.innerHTML = `
       <div class="view-wrapper open-workspace-container">
@@ -258,7 +258,7 @@ export function renderOpenView(container) {
         render();
 
         const apiKey = appState.settings.geminiApiKey;
-        const model = appState.settings.geminiModel || "gemini-2.5-flash";
+        const model = appState.settings.geminiModel || "gemini-3.8-flash";
         let result;
 
         if (apiKey) {
