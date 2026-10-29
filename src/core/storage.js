@@ -14,9 +14,20 @@ export const storage = {
   getSettings() {
     try {
       const data = localStorage.getItem(KEYS.SETTINGS);
-      return data ? JSON.parse(data) : { geminiApiKey: "", soundEnabled: true, darkMode: true };
+      const defaults = {
+        geminiApiKey: "",
+        geminiModel: "gemini-1.5-flash",
+        soundEnabled: true,
+        darkMode: true
+      };
+      return data ? { ...defaults, ...JSON.parse(data) } : defaults;
     } catch {
-      return { geminiApiKey: "", soundEnabled: true, darkMode: true };
+      return {
+        geminiApiKey: "",
+        geminiModel: "gemini-1.5-flash",
+        soundEnabled: true,
+        darkMode: true
+      };
     }
   },
 

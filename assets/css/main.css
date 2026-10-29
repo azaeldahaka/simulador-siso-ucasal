@@ -43,6 +43,7 @@ html {
   color: var(--text);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   width: 100%;
 }
@@ -65,7 +66,31 @@ button, [role="button"], .chip, .choice-option, .nav-item {
 
 input, textarea, select {
   font-family: inherit;
-  font-size: 16px;
+  font-size: 15px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 2px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
 }
 
 /* Animations */
@@ -75,7 +100,7 @@ input, textarea, select {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .whitespace-pre-line {

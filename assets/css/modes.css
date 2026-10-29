@@ -1,60 +1,112 @@
 /**
- * Estilos Específicos para cada Modo de Estudio
+ * Estilos Específicos para cada Modo de Estudio • Optimizado para PC y Móviles
  */
 
-/* --- 1. MODO MULTIPLE CHOICE --- */
-.progress-indicator {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.options-list {
+/* ==========================================================================
+   1. MODO MULTIPLE CHOICE (Radar Cazabobos Rivera & Atajos de Teclado)
+   ========================================================================== */
+.choice-topbar {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .choice-topbar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.question-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+@media (min-width: 768px) {
+  .options-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .choice-option {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  padding: 14px 16px;
+  padding: 16px 18px;
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
   line-height: 1.45;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
   width: 100%;
+  position: relative;
 }
 
 .choice-option:hover:not(:disabled) {
   background: var(--surface-3);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateX(2px);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.choice-option:active:not(:disabled) {
+  transform: scale(0.99);
 }
 
 .option-prefix {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  font-weight: 700;
-  font-size: 12px;
-  width: 26px;
-  height: 26px;
+  font-weight: 800;
+  font-size: 13px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.option-text {
+  flex: 1;
+}
+
+.kbd-shortcut-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 700;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .kbd-shortcut-hint {
+    display: inline-block;
+  }
 }
 
 .choice-option.correct {
@@ -82,40 +134,45 @@
 }
 
 .choice-option.dimmed {
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 .explanation-box {
-  margin-top: 18px;
-  padding: 16px;
+  margin-top: 20px;
+  padding: 18px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .trap-alert {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   background: var(--warn-bg);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 10px 14px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 12px 16px;
   border-radius: 8px;
   color: #fef3c7;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .trap-icon {
-  font-size: 18px;
+  font-size: 20px;
   flex-shrink: 0;
+}
+
+.trap-content strong {
+  display: block;
+  margin-bottom: 2px;
 }
 
 .explanation-text {
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-muted);
 }
 
@@ -125,56 +182,344 @@
   margin-bottom: 4px;
 }
 
-/* --- 2. MODO DESARROLLO ESCRITO --- */
+.choice-nav-tip {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.choice-nav-tip code {
+  color: var(--accent-light);
+}
+
+/* ==========================================================================
+   2. MODO DESARROLLO ESCRITO (Workspace Split 2-Column para PC)
+   ========================================================================== */
+.workspace-topbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+@media (min-width: 640px) {
+  .workspace-topbar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-counter {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.ai-evaluator-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.badge-ai-active {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #a7f3d0;
+}
+
+.badge-ai-active .ai-indicator-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--ok);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--ok);
+}
+
+.badge-ai-offline {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.badge-ai-offline .ai-indicator-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--text-dim);
+  border-radius: 50%;
+}
+
+.btn-text-action {
+  background: transparent;
+  border: none;
+  color: var(--accent-light);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 11px;
+  padding-left: 6px;
+  text-decoration: underline;
+}
+
+/* Split Workspace Layout */
+.open-layout-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .open-layout-split {
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .open-col-inspector {
+    position: sticky;
+    top: 76px;
+  }
+}
+
+.editor-card {
+  margin-bottom: 0;
+}
+
+.editor-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.editor-tip-kbd {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.editor-tip-kbd code {
+  color: var(--accent-light);
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
 .open-textarea {
   width: 100%;
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 14px;
+  padding: 16px;
   border-radius: var(--radius-sm);
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.6;
   resize: vertical;
+  min-height: 180px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .open-textarea:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .textarea-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 10px;
   margin-bottom: 16px;
 }
 
-.word-counter {
+.counter-group {
+  display: flex;
+  gap: 6px;
   font-size: 12px;
   color: var(--text-muted);
 }
 
-.eval-result-card {
-  margin-top: 20px;
-  padding: 18px;
+.char-counter {
+  color: var(--text-dim);
+}
+
+.btn-eval-action {
+  padding: 11px 22px;
+  font-size: 14px;
+}
+
+.workspace-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-jump-select {
+  flex: 1;
+  max-width: 260px;
+}
+
+.quick-jump-select select {
+  width: 100%;
+}
+
+/* Inspector de Evaluación / Rúbrica */
+.rubric-guideline-card {
+  border-left: 4px solid var(--accent);
+}
+
+.rubric-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.rubric-icon {
+  font-size: 26px;
+}
+
+.rubric-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rubric-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rubric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rubric-tag {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-light);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rubric-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.rubric-text.small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.keywords-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.keyword-pill-dim {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.method-box {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* Loading State */
+.evaluating-skeleton-card {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.pulse-icon {
+  font-size: 42px;
+  margin-bottom: 12px;
+  animation: pulseIcon 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.eval-loading-state h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.loading-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 360px;
+  margin: 0 auto 20px;
+}
+
+.loading-progress-bar {
+  width: 100%;
+  max-width: 260px;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.loading-progress-fill {
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+  border-radius: 10px;
+  animation: loadingAnim 1.4s infinite ease-in-out;
+}
+
+@keyframes loadingAnim {
+  0% { transform: translateX(-100%); width: 30%; }
+  50% { width: 60%; }
+  100% { transform: translateX(250%); width: 30%; }
+}
+
+/* Resultado de Evaluación */
+.eval-result-card {
+  border-top: 4px solid var(--accent);
 }
 
 .eval-header {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .score-circle {
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -198,7 +543,7 @@
 }
 
 .score-val {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
 }
 
@@ -207,21 +552,56 @@
   opacity: 0.8;
 }
 
-.eval-title-wrap h3 {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 4px;
+.result-badge-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .eval-feedback {
   font-size: 13px;
   color: var(--text-muted);
-  line-height: 1.4;
+  line-height: 1.5;
+}
+
+.eval-bullets-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.bullet-box {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.bullet-box h4 {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.bullet-box ul {
+  padding-left: 16px;
+}
+
+.bullet-box.strengths {
+  background: var(--ok-bg);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
+}
+
+.bullet-box.improvements {
+  background: var(--warn-bg);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fef3c7;
 }
 
 .keywords-analysis {
-  margin-bottom: 16px;
-  padding-top: 12px;
+  margin-bottom: 18px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-light);
 }
 
@@ -238,7 +618,7 @@
 }
 
 .model-answer-details {
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
@@ -256,14 +636,45 @@
   white-space: pre-wrap;
   font-family: inherit;
   font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.5;
+  color: var(--text);
+  line-height: 1.6;
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
 }
 
-/* --- 3. MODO GENERADOR DE CÁLCULOS --- */
+/* ==========================================================================
+   3. MODO GENERADOR DE CÁLCULOS CUANTITATIVOS
+   ========================================================================== */
+.generator-controls-bar {
+  margin-bottom: 16px;
+}
+
+.generator-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 960px) {
+  .generator-layout-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+.problem-statement-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
 .calculation-input-box {
-  margin-top: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
 .input-with-addon {
@@ -273,7 +684,13 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+
+.input-with-addon:focus-within {
+  border-color: var(--accent);
 }
 
 .numeric-input {
@@ -289,7 +706,7 @@
 .input-addon {
   background: var(--surface-3);
   padding: 12px 16px;
-  color: var(--text-muted);
+  color: var(--text);
   font-weight: 700;
   font-size: 14px;
   border-left: 1px solid var(--border);
@@ -297,12 +714,16 @@
 
 .calc-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
+.btn-calc {
+  padding: 12px 20px;
+}
+
 .verification-box {
-  margin-top: 16px;
-  padding: 16px;
+  padding: 18px;
   border-radius: var(--radius-sm);
   border: 1px solid;
 }
@@ -321,63 +742,343 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .verif-icon {
-  font-size: 24px;
+  font-size: 28px;
+}
+
+.verif-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.verif-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.analytical-steps-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.steps-heading {
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: var(--text);
 }
 
 .steps-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 12px;
 }
 
 .step-item {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.step-badge {
+  background: var(--accent);
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.generator-hint-panel {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.generator-hint-panel .hint-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.generator-hint-panel h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.generator-hint-panel p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.formula-tip-pill {
+  display: inline-block;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--accent-light);
+}
+
+/* ==========================================================================
+   4. MODO CHEAT-SHEET & FORMULARIO MAESTRO
+   ========================================================================== */
+.cheatsheet-header {
+  margin-bottom: 24px;
+}
+
+.section-heading {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-subtext {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.formulas-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .formulas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .formulas-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.formula-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.formula-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.formula-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.formula-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.formula-code-wrap {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.formula-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.formula-details {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 12px;
+  flex: 1;
+}
+
+.formula-example {
+  background: rgba(99, 102, 241, 0.08);
+  border-left: 3px solid var(--accent);
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #c7d2fe;
+}
+
+.table-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.cheat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.cheat-table th {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.cheat-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light);
   line-height: 1.45;
   color: var(--text-muted);
 }
 
-.step-bullet {
-  color: var(--accent-light);
+.cheat-table tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
 }
 
-/* --- 4. MODO SIMULACRO EXAMEN --- */
+.cheat-table td.feature-col {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.cheat-table td.highlight-col {
+  color: #a7f3d0;
+  font-weight: 600;
+}
+
+/* Terminal de Diagramas */
+.diagrams-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  .diagrams-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.terminal-card {
+  padding: 0;
+  overflow: hidden;
+  background: #0d1117;
+  border: 1px solid #30363d;
+}
+
+.terminal-bar {
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-red { background: #ff5f56; }
+.dot-yellow { background: #ffbd2e; }
+.dot-green { background: #27c93f; }
+
+.terminal-title {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.ascii-diagram {
+  padding: 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #58a6ff;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* ==========================================================================
+   5. MODO SIMULACRO EXAMEN
+   ========================================================================== */
 .exam-intro-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 28px 20px;
+  padding: 36px 24px;
   text-align: center;
+  max-width: 780px;
+  margin: 0 auto;
 }
 
 .exam-badge {
   background: rgba(99, 102, 241, 0.2);
   color: var(--accent-light);
   border: 1px solid var(--accent);
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
   display: inline-block;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .exam-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .exam-desc {
   font-size: 14px;
   color: var(--text-muted);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .exam-rules-list {
@@ -386,53 +1087,58 @@
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 16px;
-  margin-bottom: 24px;
+  padding: 18px 20px;
+  margin-bottom: 28px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .exam-sticky-bar {
   position: sticky;
-  top: 65px;
+  top: 68px;
   z-index: 90;
   background: rgba(17, 24, 39, 0.95);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 10px 16px;
-  margin-bottom: 16px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 .timer-chip {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   background: var(--surface-3);
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 16px;
   color: #facc15;
 }
 
 .exam-q-card {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+}
+
+.exam-questions-list, .exam-review-list {
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .exam-result-banner {
   border: 2px solid;
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 28px;
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .exam-result-banner.pass {
@@ -446,13 +1152,13 @@
 }
 
 .result-icon {
-  font-size: 40px;
+  font-size: 44px;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .score-display {
-  font-size: 44px;
+  font-size: 48px;
   font-weight: 900;
   margin: 12px 0;
 }
@@ -462,15 +1168,15 @@
 }
 
 .score-den {
-  font-size: 22px;
+  font-size: 24px;
   color: var(--text-muted);
 }
 
 .result-msg {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-muted);
-  max-width: 440px;
-  margin: 0 auto 18px;
+  max-width: 480px;
+  margin: 0 auto 20px;
 }
 
 .review-card.pass {
@@ -485,98 +1191,8 @@
   font-size: 13px;
   color: var(--text-muted);
   background: var(--surface-2);
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 8px;
-  margin-bottom: 12px;
-}
-
-/* --- 5. MODO CHEAT-SHEET --- */
-.section-heading {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.formulas-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.formula-card {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  padding: 14px;
-  border-radius: var(--radius-sm);
-}
-
-.formula-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--accent-light);
-  margin-bottom: 6px;
-}
-
-.formula-code {
-  display: block;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 13px;
-  color: #38bdf8;
-  margin-bottom: 6px;
-  overflow-x: auto;
-}
-
-.formula-details {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.formula-example {
-  font-size: 12px;
-  color: #a7f3d0;
-  background: var(--ok-bg);
-  padding: 6px 10px;
-  border-radius: 6px;
-}
-
-.table-responsive {
-  overflow-x: auto;
-}
-
-.cheat-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  text-align: left;
-}
-
-.cheat-table th, .cheat-table td {
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-}
-
-.cheat-table th {
-  background: var(--surface-2);
-  color: var(--accent-light);
-  font-weight: 700;
-}
-
-.ascii-diagram {
-  background: #060913;
-  border: 1px solid var(--border);
-  padding: 14px;
-  border-radius: var(--radius-sm);
-  color: #818cf8;
-  font-family: monospace;
-  font-size: 11px;
-  line-height: 1.35;
-  overflow-x: auto;
+  margin-bottom: 14px;
+  border: 1px solid var(--border-light);
 }

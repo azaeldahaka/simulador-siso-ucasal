@@ -3,7 +3,7 @@
  * Cache-First Strategy con auto-actualización
  */
 
-const CACHE_NAME = "siso-simulador-v1";
+const CACHE_NAME = "siso-simulador-v2";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
