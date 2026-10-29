@@ -1,0 +1,28 @@
+{
+  "name": "Simulador 2do Parcial - Sistemas Operativos UCASAL",
+  "short_name": "Simulador SISO",
+  "description": "Entrenador interactivo mobile-first con Active Recall, Choice, Cálculo numérico y Simulacro de examen para Sistemas Operativos (Rivera - UCASAL).",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

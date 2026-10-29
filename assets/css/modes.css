@@ -1,0 +1,582 @@
+/**
+ * Estilos Específicos para cada Modo de Estudio
+ */
+
+/* --- 1. MODO MULTIPLE CHOICE --- */
+.progress-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.choice-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.choice-option:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(2px);
+}
+
+.option-prefix {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.choice-option.correct {
+  background: var(--ok-bg);
+  border-color: var(--ok);
+  color: #a7f3d0;
+}
+
+.choice-option.correct .option-prefix {
+  background: var(--ok);
+  color: #064e3b;
+  border-color: var(--ok);
+}
+
+.choice-option.incorrect {
+  background: var(--err-bg);
+  border-color: var(--err);
+  color: #fecaca;
+}
+
+.choice-option.incorrect .option-prefix {
+  background: var(--err);
+  color: #7f1d1d;
+  border-color: var(--err);
+}
+
+.choice-option.dimmed {
+  opacity: 0.4;
+}
+
+.explanation-box {
+  margin-top: 18px;
+  padding: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trap-alert {
+  display: flex;
+  gap: 10px;
+  background: var(--warn-bg);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #fef3c7;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.trap-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.explanation-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.explanation-text strong {
+  color: var(--text);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* --- 2. MODO DESARROLLO ESCRITO --- */
+.open-textarea {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.open-textarea:focus {
+  border-color: var(--accent);
+}
+
+.textarea-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.word-counter {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.eval-result-card {
+  margin-top: 20px;
+  padding: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.eval-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.score-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex-shrink: 0;
+  border: 3px solid;
+}
+
+.score-circle.pass {
+  background: var(--ok-bg);
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.score-circle.fail {
+  background: var(--err-bg);
+  border-color: var(--err);
+  color: var(--err);
+}
+
+.score-val {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.score-max {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.eval-title-wrap h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.eval-feedback {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.keywords-analysis {
+  margin-bottom: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+.keywords-analysis h4 {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.model-answer-details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.model-answer-details summary {
+  cursor: pointer;
+  color: var(--accent-light);
+  user-select: none;
+}
+
+.model-pre {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* --- 3. MODO GENERADOR DE CÁLCULOS --- */
+.calculation-input-box {
+  margin-top: 14px;
+  margin-bottom: 18px;
+}
+
+.input-with-addon {
+  display: flex;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.numeric-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 12px 16px;
+  font-size: 16px;
+  outline: none;
+}
+
+.input-addon {
+  background: var(--surface-3);
+  padding: 12px 16px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 14px;
+  border-left: 1px solid var(--border);
+}
+
+.calc-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.verification-box {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+}
+
+.verification-box.pass {
+  background: var(--ok-bg);
+  border-color: var(--ok);
+}
+
+.verification-box.fail {
+  background: var(--err-bg);
+  border-color: var(--err);
+}
+
+.verif-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.verif-icon {
+  font-size: 24px;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.step-item {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.step-bullet {
+  color: var(--accent-light);
+}
+
+/* --- 4. MODO SIMULACRO EXAMEN --- */
+.exam-intro-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.exam-badge {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--accent-light);
+  border: 1px solid var(--accent);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+
+.exam-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.exam-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.exam-rules-list {
+  text-align: left;
+  list-style: none;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.exam-sticky-bar {
+  position: sticky;
+  top: 65px;
+  z-index: 90;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.timer-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-3);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #facc15;
+}
+
+.exam-q-card {
+  margin-bottom: 18px;
+}
+
+.exam-result-banner {
+  border: 2px solid;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.exam-result-banner.pass {
+  background: var(--ok-bg);
+  border-color: var(--ok);
+}
+
+.exam-result-banner.fail {
+  background: var(--err-bg);
+  border-color: var(--err);
+}
+
+.result-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.score-display {
+  font-size: 44px;
+  font-weight: 900;
+  margin: 12px 0;
+}
+
+.score-num {
+  color: var(--text);
+}
+
+.score-den {
+  font-size: 22px;
+  color: var(--text-muted);
+}
+
+.result-msg {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 440px;
+  margin: 0 auto 18px;
+}
+
+.review-card.pass {
+  border-left: 4px solid var(--ok);
+}
+
+.review-card.fail {
+  border-left: 4px solid var(--err);
+}
+
+.user-written-quote {
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+/* --- 5. MODO CHEAT-SHEET --- */
+.section-heading {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formulas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formula-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: var(--radius-sm);
+}
+
+.formula-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-light);
+  margin-bottom: 6px;
+}
+
+.formula-code {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 13px;
+  color: #38bdf8;
+  margin-bottom: 6px;
+  overflow-x: auto;
+}
+
+.formula-details {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.formula-example {
+  font-size: 12px;
+  color: #a7f3d0;
+  background: var(--ok-bg);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.cheat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.cheat-table th, .cheat-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+}
+
+.cheat-table th {
+  background: var(--surface-2);
+  color: var(--accent-light);
+  font-weight: 700;
+}
+
+.ascii-diagram {
+  background: #060913;
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  color: #818cf8;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow-x: auto;
+}
