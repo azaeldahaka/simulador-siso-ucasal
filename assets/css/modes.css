@@ -20,6 +20,12 @@
   }
 }
 
+.topbar-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .progress-indicator {
   display: flex;
   align-items: center;

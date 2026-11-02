@@ -3,7 +3,7 @@
  * Estrategia Híbrida: Network-First para Código (.js, .css, .html) + Cache-First para Medios
  */
 
-const CACHE_NAME = "siso-simulador-v3.8.0";
+const CACHE_NAME = "siso-simulador-v3.9.0";
 
 const ASSETS_TO_CACHE = [
   "./",

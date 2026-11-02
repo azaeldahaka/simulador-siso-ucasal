@@ -1,24 +1,58 @@
 /**
- * Componente: Modo Múltiple Choice con Radar Cazabobos y Atajos de Teclado
+ * Componente: Modo Múltiple Choice con Radar Cazabobos,
+ * Aleatorización Genuina (Fisher-Yates) de Preguntas y Opciones, y Atajos de Teclado.
  */
 import { choiceQuestions } from "../data/questions-choice.js";
 import { storage } from "../core/storage.js";
 
+// Algoritmo de barajado Fisher-Yates para arreglos
+function shuffleArray(arr) {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export function renderChoiceView(container) {
   let activeFilter = "all"; // 'all' | 'u4' | 'u5'
   let currentIndex = 0;
-  let filteredQuestions = [...choiceQuestions];
+  let filteredQuestions = [];
   let answeredState = {}; // { questionId: { selectedOption, isCorrect } }
 
-  function filterQuestions() {
+  // Cache para que las opciones de una misma pregunta permanezcan estables al navegar hacia atrás/adelante
+  // { questionId: { shuffledOptions: string[], correctIndex: number } }
+  let questionStateCache = {};
+
+  // Inicializa o re-baraja las preguntas y sus opciones según el filtro activo
+  function initAndShuffle(keepFilter = true) {
+    let pool = [];
     if (activeFilter === "u4") {
-      filteredQuestions = choiceQuestions.filter(q => q.unit === 4);
+      pool = choiceQuestions.filter(q => q.unit === 4);
     } else if (activeFilter === "u5") {
-      filteredQuestions = choiceQuestions.filter(q => q.unit === 5);
+      pool = choiceQuestions.filter(q => q.unit === 5);
     } else {
-      filteredQuestions = [...choiceQuestions];
+      pool = [...choiceQuestions];
     }
+
+    // Barajado Fisher-Yates de las preguntas
+    filteredQuestions = shuffleArray(pool);
     currentIndex = 0;
+    answeredState = {};
+    questionStateCache = {};
+
+    // Pre-barajar las opciones de cada pregunta para asegurar distribución aleatoria de la respuesta correcta
+    filteredQuestions.forEach(q => {
+      const originalCorrectText = q.options[q.correct];
+      const shuffled = shuffleArray(q.options);
+      const newCorrectIndex = shuffled.indexOf(originalCorrectText);
+      questionStateCache[q.id] = {
+        shuffledOptions: shuffled,
+        correctIndex: newCorrectIndex
+      };
+    });
+
     render();
   }
 
@@ -26,7 +60,8 @@ export function renderChoiceView(container) {
     const q = filteredQuestions[currentIndex];
     if (answeredState[q.id] !== undefined) return; // Ya respondida
 
-    const isCorrect = optIndex === q.correct;
+    const qState = questionStateCache[q.id];
+    const isCorrect = optIndex === qState.correctIndex;
     answeredState[q.id] = { selectedOption: optIndex, isCorrect };
     storage.recordChoiceAnswer(isCorrect);
     render();
@@ -37,9 +72,8 @@ export function renderChoiceView(container) {
       currentIndex++;
       render();
     } else {
-      // Reiniciar
-      currentIndex = 0;
-      render();
+      // Al terminar la lista, re-barajar automáticamente para un nuevo intento
+      initAndShuffle();
     }
   }
 
@@ -52,12 +86,17 @@ export function renderChoiceView(container) {
 
   function render() {
     const q = filteredQuestions[currentIndex];
+    if (!q) return;
+
     const isAnswered = answeredState[q.id] !== undefined;
     const answerData = answeredState[q.id];
+    const qState = questionStateCache[q.id];
+    const displayOptions = qState.shuffledOptions;
+    const correctIndex = qState.correctIndex;
 
     container.innerHTML = `
       <div class="view-wrapper">
-        <!-- Barra de Filtros y Progreso Superior -->
+        <!-- Barra de Filtros, Progreso y Re-barajado -->
         <div class="choice-topbar">
           <div class="filter-bar">
             <button class="chip ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">Todas (${choiceQuestions.length})</button>
@@ -65,9 +104,14 @@ export function renderChoiceView(container) {
             <button class="chip ${activeFilter === 'u5' ? 'active' : ''}" data-filter="u5">U5: E/S & Discos</button>
           </div>
 
-          <div class="progress-indicator">
-            <span class="progress-text">Pregunta <strong>${currentIndex + 1}</strong> de ${filteredQuestions.length}</span>
-            <span class="badge badge-unit">Unidad ${q.unit} • ${q.category}</span>
+          <div class="topbar-actions-row">
+            <div class="progress-indicator">
+              <span class="progress-text">Pregunta <strong>${currentIndex + 1}</strong> de ${filteredQuestions.length}</span>
+              <span class="badge badge-unit">Unidad ${q.unit} • ${q.category}</span>
+            </div>
+            <button id="btn-shuffle-questions" class="btn btn-secondary btn-sm" title="Re-barajar aleatoriamente preguntas y opciones">
+              🔀 Re-barajar
+            </button>
           </div>
         </div>
 
@@ -75,15 +119,15 @@ export function renderChoiceView(container) {
         <div class="quiz-card choice-main-card">
           <div class="question-header-row">
             <h2 class="question-title">${q.question}</h2>
-            <span class="badge badge-source">${q.source}</span>
+            <span class="badge badge-source">${q.source || 'Cátedra Rivera'}</span>
           </div>
 
-          <!-- Opciones con atajos A, B, C, D o 1, 2, 3, 4 -->
+          <!-- Opciones Aleatorizadas con Atajos A, B, C, D o 1, 2, 3, 4 -->
           <div class="options-grid">
-            ${q.options.map((opt, i) => {
+            ${displayOptions.map((opt, i) => {
               let btnClass = "choice-option";
               if (isAnswered) {
-                if (i === q.correct) {
+                if (i === correctIndex) {
                   btnClass += " correct";
                 } else if (i === answerData.selectedOption) {
                   btnClass += " incorrect";
@@ -128,7 +172,7 @@ export function renderChoiceView(container) {
               <span class="desktop-tip">Presioná <code>1</code> a <code>4</code> para responder • <code>Enter</code> o <code>→</code> para avanzar</span>
             </div>
             <button id="btn-next" class="btn btn-primary" ${!isAnswered ? 'disabled' : ''}>
-              ${currentIndex === filteredQuestions.length - 1 ? 'Reiniciar Lista' : 'Siguiente →'}
+              ${currentIndex === filteredQuestions.length - 1 ? 'Finalizar y Re-barajar' : 'Siguiente →'}
             </button>
           </div>
         </div>
@@ -147,9 +191,17 @@ export function renderChoiceView(container) {
     container.querySelectorAll(".filter-bar .chip").forEach(c => {
       c.addEventListener("click", () => {
         activeFilter = c.dataset.filter;
-        filterQuestions();
+        initAndShuffle();
       });
     });
+
+    // Botón de Re-barajado Manual
+    const btnShuffle = container.querySelector("#btn-shuffle-questions");
+    if (btnShuffle) {
+      btnShuffle.addEventListener("click", () => {
+        initAndShuffle();
+      });
+    }
 
     // Botones de Siguiente y Anterior
     const btnNext = container.querySelector("#btn-next");
@@ -161,13 +213,14 @@ export function renderChoiceView(container) {
 
   // Listener Global de Teclado para Choice
   function keyHandler(e) {
-    // Si el usuario está escribiendo en un input o textarea de otra vista, no interceptar
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") {
       return;
     }
 
     const key = e.key.toUpperCase();
     const q = filteredQuestions[currentIndex];
+    if (!q) return;
+
     const isAnswered = answeredState[q.id] !== undefined;
 
     if (!isAnswered) {
@@ -186,9 +239,8 @@ export function renderChoiceView(container) {
     }
   }
 
-  // Registrar listener y desmontarlo si cambia de modo
   window.addEventListener("keydown", keyHandler);
-  const unsubscribe = () => window.removeEventListener("keydown", keyHandler);
 
-  render();
+  // Inicialización con barajado inicial
+  initAndShuffle();
 }
